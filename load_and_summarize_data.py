@@ -40,31 +40,32 @@ class Data:
         # Return the scaled estimates
         self.norm_rets = rets / vol * new_vol
 
-# Function for summary statistics
- # Compute simple summary statistics over a specified time range for some set of returns.
-    def compute_summary(self, rets, start_date=None, end_date=None):
-        if start_date is None:
-            start_date = self.start_date 
-        if end_date is None:
-            end_date   = self.end_date 
 
-        # Get the indexes corresponding to the dates - this deals with case where user provides an invalid date. 
-        index     = rets.index 
-        start_idx = index.get_indexer([start_date], method='nearest')[0]
-        end_idx   = index.get_indexer([end_date], method='nearest')[0] + 1
+# Compute simple summary statistics over a specified time range for some set of returns.
+def compute_summary(rets, ann_factor=252, start_date=None, end_date=None):
+    # Get datetime index and set default values to start and end if none are provided.
+    index     = rets.index 
+    if start_date is None:
+        start_date = index[0]
+    if end_date is None:
+        end_date   = index[-1]
 
-        # Obtain the relevant data slice
-        rets_sliced = rets.iloc[start_idx:end_idx, :]
+    # Find nearest indexes corresponding to these dates - this deals with case where user provides an invalid date. 
+    start_idx = index.get_indexer([start_date], method='nearest')[0]
+    end_idx   = index.get_indexer([end_date], method='nearest')[0] + 1
 
-        # Compute the number of days with NaN values
-        num_nan = (~rets_sliced.isna()).sum()
+    # Obtain the relevant data slice
+    rets_sliced = rets.iloc[start_idx:end_idx, :]
 
-        # Compute the annualized returns, annualized vol, and ratio
-        ann_ret = ((1 + rets_sliced).prod())**(self.ann_factor / num_nan) - 1
-        ann_vol = rets_sliced.std() * np.sqrt(self.ann_factor) 
-        sharpe_ratio = ann_ret / ann_vol
+    # Compute the number of days with NaN values
+    num_nan = (~rets_sliced.isna()).sum()
 
-        # Compile results into one DataFrame
-        summary_stats = pd.concat([ann_ret, ann_vol, sharpe_ratio], axis=1)
-        summary_stats.columns = ['AnnRet', 'AnnVol', 'SharpeRatio']
-        return summary_stats
+    # Compute the annualized returns, annualized vol, and ratio
+    ann_ret = ((1 + rets_sliced).prod())**(ann_factor / num_nan) - 1
+    ann_vol = rets_sliced.std() * np.sqrt(ann_factor) 
+    sharpe_ratio = ann_ret / ann_vol
+
+    # Compile results into one DataFrame
+    summary_stats = pd.concat([ann_ret, ann_vol, sharpe_ratio], axis=1)
+    summary_stats.columns = ['AnnRet', 'AnnVol', 'SharpeRatio']
+    return summary_stats
