@@ -15,7 +15,7 @@ class Data:
     # Load the data and compute returns based on adjusted close (accounts for impact of dividends and splits). For time being, only return DataFrame with adjusted close and returns.
     def get_data(self):
         # Get data
-        raw_data = yf.download(self.tickers, self.start_date, self.end_date)
+        raw_data = yf.download(tickers=self.tickers, start=self.start_date, end=self.end_date)
         
         # Compute returns from adjusted close and return
         self.adj_close = raw_data.loc[:, 'Adj Close']
@@ -69,3 +69,30 @@ def compute_summary(rets, ann_factor=252, start_date=None, end_date=None):
     summary_stats = pd.concat([ann_ret, ann_vol, sharpe_ratio], axis=1)
     summary_stats.columns = ['AnnRet', 'AnnVol', 'SharpeRatio']
     return summary_stats
+
+# Compute maximum drawdown for a single return series. Returns the value of the maximum drawdown, the index of the peak, the index of the trough, and the index of the recovery. If the drawdown does not recover before the end of the time series, the index is set to NaN. Use np functions instead of built-in pandas to handle different series types.
+def compute_max_drawdown(rets):
+    # First, convert the returns to a cumulative price series. 
+    prices = (1 + rets).cumprod()
+
+    # Compute the cumulative maximum and possible drawdowns 
+    cum_max  = prices.cummax()
+    drawdown = prices / cum_max - 1
+
+    # Find the minimum value from drawdown as the worst drawdown.
+    trough_idx = np.argmin(drawdown)
+    max_dd     = drawdown.iloc[trough_idx]
+
+    # To find the index of the peak value, find the first instance of the cumulative maximum corresponding to the one at the trough. 
+    peak_idx = np.argmax(cum_max.iloc[:trough_idx])
+
+    # Finally to find the recovery index, look at the cumulative maximum after the trough index. If the cumulative maximum ever exceeds that of the value at the trough, then the drawdown is recovered.
+    max_at_trough = cum_max.iloc[trough_idx]
+    has_recovered = cum_max.iloc[trough_idx+1:] > max_at_trough
+    recovery_idx  = float('Inf')
+    if np.any(has_recovered):
+        recovery_idx = np.argmax(has_recovered) + trough_idx + 1
+    
+    # Return values as a tuple
+    return(max_dd, peak_idx, trough_idx, recovery_idx)
+
