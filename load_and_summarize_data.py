@@ -97,7 +97,8 @@ def compute_max_drawdown(rets):
     # To find the index of the peak value, find the first instance of the cumulative maximum corresponding to the one at the trough. 
     peak_idx = np.argmax(cum_max.iloc[:trough_idx])
 
-    # Finally to find the recovery index, look at the cumulative maximum after the trough index. If the cumulative maximum ever exceeds that of the value at the trough, then the drawdown is recovered.
+    # Finally to find the recovery index, look at the cumulative maximum after the trough index. 
+    # If the cumulative maximum ever exceeds that of the value at the trough, then the drawdown is recovered.
     max_at_trough = cum_max.iloc[trough_idx]
     has_recovered = cum_max.iloc[trough_idx+1:] > max_at_trough
     recovery_idx  = prices.shape[0] - 1
