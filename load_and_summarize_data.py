@@ -10,13 +10,13 @@ class Data:
         self.start_date    = start_date 
         self.end_date      = end_date 
         self.min_sample    = min_sample
+        # Approximate number of trading days per year
         self.ann_factor    = 252
         self.get_data()
        
     # Load the data and compute returns based on adjusted close (accounts for impact of dividends and splits). 
     # For time being, only return DataFrame with adjusted close and returns.
     def get_data(self):
-        # Get data
         raw_data = yf.download(tickers=self.tickers, start=self.start_date, end=self.end_date)
         
         # Compute returns from adjusted close and return
