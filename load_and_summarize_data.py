@@ -13,7 +13,8 @@ class Data:
         self.ann_factor    = 252
         self.get_data()
        
-    # Load the data and compute returns based on adjusted close (accounts for impact of dividends and splits). For time being, only return DataFrame with adjusted close and returns.
+    # Load the data and compute returns based on adjusted close (accounts for impact of dividends and splits). 
+    # For time being, only return DataFrame with adjusted close and returns.
     def get_data(self):
         # Get data
         raw_data = yf.download(tickers=self.tickers, start=self.start_date, end=self.end_date)
@@ -27,7 +28,9 @@ class Data:
         # Aggregate using geometric compounding.
         self.agg_rets = (1 + self.rets).groupby(pd.Grouper(freq=freq)).prod() - 1
 
-    # For a given set of returns, estimate returns normalized by rolling exponentially-weighted volatility, for a given half-life. Optionally, user can provide a specific volatility to normalize to. Allows user to more easily compare assets with different vols.
+    # For a given set of returns, estimate returns normalized by rolling exponentially-weighted
+    # volatility, for a given half-life. Optionally, user can provide a specific volatility to
+    # normalize to. Allows user to more easily compare assets with different vols.
     def normalize_rets(self, rets, half_life, new_vol=1):
         # Define alpha factor
         alpha = 1 - 0.5**(1/half_life)
