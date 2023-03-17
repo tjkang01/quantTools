@@ -101,10 +101,11 @@ def compute_max_drawdown(rets):
     # If the cumulative maximum ever exceeds that of the value at the trough, then the drawdown is recovered.
     max_at_trough = cum_max.iloc[trough_idx]
     has_recovered = cum_max.iloc[trough_idx+1:] > max_at_trough
-    recovery_idx  = prices.shape[0] - 1
     if has_recovered.any()[0]:
         recovery_idx = np.argmax(has_recovered) + trough_idx + 1
-    
+    else:
+        recovery_idx = prices.shape[0] - 1
+
     # Return values as a list for mutability
     return [max_dd, peak_idx, trough_idx, recovery_idx]
 
