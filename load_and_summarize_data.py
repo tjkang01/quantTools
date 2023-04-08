@@ -23,6 +23,10 @@ class Data:
         self.adj_close = raw_data.loc[:, ['Adj Close']]
         self.rets      = self.adj_close.pct_change().fillna(0).rename(columns={'Adj Close': 'Returns'})
 
+        # Drop top-level columns.
+        self.adj_close.columns = self.adj_close.columns.droplevel(0)
+        self.rets.columns      = self.rets.columns.droplevel(0)
+
     # Aggregate data to different frequency based on request.
     def aggregate_data(self, freq):
         # Aggregate using geometric compounding.
